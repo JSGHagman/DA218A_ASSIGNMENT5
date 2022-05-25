@@ -2,10 +2,12 @@ package Uppgift5;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class GenericRestaurantForm {
+public class GenericRestaurantForm implements ActionListener {
 
-    private JFrame frame;			// The Main window
+    private JFrame frame;            // The Main window
 
     JLabel labelMenu;               // Label for menu section
     JLabel labelOrder;              // Label for Order section
@@ -37,7 +39,11 @@ public class GenericRestaurantForm {
     DefaultListModel<String> orderStatusModel;   // Stores a list of string that is displayed at orderStatusArea
     JList<String> orderStatusArea;               // To display status of the submitted order
 
-    public GenericRestaurantForm(){}
+    private OrderItem order;
+    private OrderClient client = new OrderClient();
+
+    public GenericRestaurantForm() {
+    }
 
     /**
      * Starts the application
@@ -48,10 +54,10 @@ public class GenericRestaurantForm {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(null);
         frame.setTitle("Generic Restaurant");
-        InitializeGUI();					// Fill in components
+        InitializeGUI();                    // Fill in components
         frame.setVisible(true);
-        frame.setResizable(true);			// Prevent user from change size
-        frame.setLocationRelativeTo(null);	// Start middle screen
+        frame.setResizable(true);            // Prevent user from change size
+        frame.setLocationRelativeTo(null);    // Start middle screen
     }
 
     private void InitializeGUI() {
@@ -63,84 +69,87 @@ public class GenericRestaurantForm {
         //*** Menu item 1 *****
         //*********************
         menuItem1 = new JPanel();
-        menuItem1.setBounds(10,35,300,100);
+        menuItem1.setBounds(10, 35, 300, 100);
         menuItem1.setBorder(BorderFactory.createLineBorder(Color.black));
         menuItem1.setLayout(null);
         frame.add(menuItem1);
 
         menuItem1Name = new JLabel("Sandwich");
-        menuItem1Name.setBounds(5,5,100,10);
+        menuItem1Name.setBounds(5, 5, 100, 10);
         menuItem1.add(menuItem1Name);
 
         menuItem1Descr = new JLabel("Bread, meat, cheese, salad, vegetables, sauce");
         menuItem1Descr.setFont(new Font("Verdana", Font.PLAIN, 11));
-        menuItem1Descr.setBounds(5,20,300,10);
+        menuItem1Descr.setBounds(5, 20, 300, 10);
         menuItem1.add(menuItem1Descr);
 
         menuItem1Cost = new JLabel("23kr");
         menuItem1Cost.setFont(new Font("Dialog", Font.BOLD, 11));
-        menuItem1Cost.setBounds(5,60,100,10);
+        menuItem1Cost.setBounds(5, 60, 100, 10);
         menuItem1.add(menuItem1Cost);
 
         menuItem1Button = new JButton();
         menuItem1Button.setBounds(180, 50, 100, 30);
         menuItem1Button.setText("add");
+        menuItem1Button.addActionListener(this);
         menuItem1.add(menuItem1Button);
 
         //**********************
         //*** Menu item 2 *****
         //*********************
         menuItem2 = new JPanel();
-        menuItem2.setBounds(10,150,300,100);
+        menuItem2.setBounds(10, 150, 300, 100);
         menuItem2.setBorder(BorderFactory.createLineBorder(Color.black));
         menuItem2.setLayout(null);
         frame.add(menuItem2);
 
         menuItem2Name = new JLabel("Borscht");
-        menuItem2Name.setBounds(5,5,100,10);
+        menuItem2Name.setBounds(5, 5, 100, 10);
         menuItem2.add(menuItem2Name);
 
         menuItem2Descr = new JLabel("Beetroot, cabbage, potato, beef");
         menuItem2Descr.setFont(new Font("Verdana", Font.PLAIN, 11));
-        menuItem2Descr.setBounds(5,20,300,10);
+        menuItem2Descr.setBounds(5, 20, 300, 10);
         menuItem2.add(menuItem2Descr);
 
         menuItem2Cost = new JLabel("84kr");
         menuItem2Cost.setFont(new Font("Dialog", Font.BOLD, 11));
-        menuItem2Cost.setBounds(5,60,100,10);
+        menuItem2Cost.setBounds(5, 60, 100, 10);
         menuItem2.add(menuItem2Cost);
 
         menuItem2Button = new JButton();
         menuItem2Button.setBounds(180, 50, 100, 30);
         menuItem2Button.setText("add");
+        menuItem2Button.addActionListener(this);
         menuItem2.add(menuItem2Button);
 
         //**********************
         //*** Menu item 3 *****
         //*********************
         menuItem3 = new JPanel();
-        menuItem3.setBounds(10,265,300,100);
+        menuItem3.setBounds(10, 265, 300, 100);
         menuItem3.setBorder(BorderFactory.createLineBorder(Color.black));
         menuItem3.setLayout(null);
         frame.add(menuItem3);
 
         menuItem3Name = new JLabel("Coffee");
-        menuItem3Name.setBounds(5,5,100,10);
+        menuItem3Name.setBounds(5, 5, 100, 10);
         menuItem3.add(menuItem3Name);
 
         menuItem3Descr = new JLabel("Hot, black, good");
         menuItem3Descr.setFont(new Font("Verdana", Font.PLAIN, 11));
-        menuItem3Descr.setBounds(5,20,300,10);
+        menuItem3Descr.setBounds(5, 20, 300, 10);
         menuItem3.add(menuItem3Descr);
 
         menuItem3Cost = new JLabel("18kr");
         menuItem3Cost.setFont(new Font("Dialog", Font.BOLD, 11));
-        menuItem3Cost.setBounds(5,60,100,10);
+        menuItem3Cost.setBounds(5, 60, 100, 10);
         menuItem3.add(menuItem3Cost);
 
         menuItem3Button = new JButton();
         menuItem3Button.setBounds(180, 50, 100, 30);
         menuItem3Button.setText("add");
+        menuItem3Button.addActionListener(this);
         menuItem3.add(menuItem3Button);
 
         //*********************
@@ -183,5 +192,15 @@ public class GenericRestaurantForm {
         orderStatusModel.addElement("19:02:05 Order accepted");
         frame.add(orderStatusArea);
 
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == menuItem3Button) {
+            float price = Float.parseFloat(menuItem3Cost.getText());
+            order = new OrderItem(menuItem3Name.getText(), menuItem3Descr.getText(), price);
+            client.addItemToOrder(order);
+
+        }
     }
 }
