@@ -1,11 +1,6 @@
-package Controller;
-
-import java.util.Map;
+package Uppgift5;
 
 import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Future;
-import java.util.concurrent.CompletableFuture;
 
 public abstract class AbstractOrderClient {
     private Order order;

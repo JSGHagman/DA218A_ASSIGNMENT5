@@ -1,4 +1,4 @@
-package Controller;
+package Uppgift5;
 
 public enum OrderStatus {
     NotSent("not sent to the server"),

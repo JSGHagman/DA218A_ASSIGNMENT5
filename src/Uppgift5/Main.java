@@ -1,4 +1,4 @@
-package Controller;
+package Uppgift5;
 
 public class Main {
 
