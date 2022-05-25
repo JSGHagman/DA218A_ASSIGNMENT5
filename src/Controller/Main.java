@@ -5,6 +5,7 @@ public class Main {
     public static void main(String[] args) {
         GenericRestaurantForm restaurant = new GenericRestaurantForm();
         restaurant.Start();
-//        MainForm form = new MainForm();
+        System.out.println("Assignment 5");
+        //        MainForm form = new MainForm();
     }
 }
