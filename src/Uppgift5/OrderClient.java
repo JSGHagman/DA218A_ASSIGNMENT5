@@ -11,10 +11,8 @@ public class OrderClient extends AbstractOrderClient{
     private AbstractKitchenServer kitchenServer;
 
 
-    public OrderClient() {
+    public OrderClient(KitchenServer server) {
         order = new Order();
-        kitchenServer = new KitchenServer();
-
     }
 
     @Override

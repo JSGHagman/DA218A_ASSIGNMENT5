@@ -44,7 +44,8 @@ public class GenericRestaurantForm implements ActionListener, Callback {
     JList<String> orderStatusArea;               // To display status of the submitted order
 
     private OrderItem orderItem;
-    private OrderClient orderClient = new OrderClient();
+    private KitchenServer kitchenServer = new KitchenServer();
+    private OrderClient orderClient = new OrderClient(kitchenServer);
 
     public GenericRestaurantForm() {
     }

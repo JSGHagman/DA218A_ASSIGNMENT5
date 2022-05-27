@@ -10,12 +10,15 @@ import java.util.concurrent.Executors;
 public class KitchenServer extends AbstractKitchenServer {
     private static final int inMillis = 1000;
     private static final Random rand = new Random();
+    private CompletableFuture<OrderStatus> completableFuture;
 
     public KitchenServer() {
         threadPool = Executors.newFixedThreadPool(10);
         orderMap = new HashMap<>();
-
+        completableFuture = new CompletableFuture();
     }
+
+    
 
     @Override
     public CompletableFuture<OrderStatus> receiveOrder(Order order) throws InterruptedException {
@@ -25,12 +28,12 @@ public class KitchenServer extends AbstractKitchenServer {
             cook(order);
         };
         threadPool.submit(cook);
-        return CompletableFuture.supplyAsync(() -> OrderStatus.Received);
+        return completableFuture.supplyAsync(() -> OrderStatus.Received);
     }
 
     @Override
     public CompletableFuture<OrderStatus> checkStatus(String orderID) throws InterruptedException {
-        return CompletableFuture.supplyAsync(() -> {
+        return completableFuture.supplyAsync(() -> {
             Order order = orderMap.get(orderID);
             try {
                 Thread.sleep(3000);
@@ -43,7 +46,7 @@ public class KitchenServer extends AbstractKitchenServer {
 
     @Override
     public CompletableFuture<OrderStatus> serveOrder(String orderID) throws InterruptedException {
-        return CompletableFuture.supplyAsync(() -> OrderStatus.Served);
+        return completableFuture.supplyAsync(() -> OrderStatus.Served);
     }
 
     @Override
