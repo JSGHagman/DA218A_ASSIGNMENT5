@@ -170,11 +170,13 @@ public class GenericRestaurantForm implements ActionListener {
         orderRemoveButton = new JButton();
         orderRemoveButton.setBounds(340, 300, 100, 30);
         orderRemoveButton.setText("remove");
+        orderRemoveButton.addActionListener(this);
         frame.add(orderRemoveButton);
 
         orderSubmitButton = new JButton();
         orderSubmitButton.setBounds(490, 300, 100, 30);
         orderSubmitButton.setText("order!");
+        orderSubmitButton.addActionListener(this);
         frame.add(orderSubmitButton);
 
         //*********************
@@ -213,6 +215,14 @@ public class GenericRestaurantForm implements ActionListener {
         this.orderCartModel = orderCartModel;
     }
 
+    public void addOrderCartModel(String str) {
+        orderCartModel.addElement(str);
+    }
+
+    public void removeOrderCartModel(int index) {
+        orderCartModel.removeElementAt(index);
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
 
@@ -239,6 +249,13 @@ public class GenericRestaurantForm implements ActionListener {
 
             order = new OrderItem(menuItem3Name.getText(), menuItem3Descr.getText(), price);
             client.addItemToOrder(order);
+
+        }
+
+        if (e.getSource() == orderRemoveButton) {
+
+        }
+        if (e.getSource() == orderSubmitButton) {
 
         }
 
