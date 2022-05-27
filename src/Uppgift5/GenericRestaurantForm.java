@@ -167,8 +167,6 @@ public class GenericRestaurantForm implements ActionListener {
         orderCartArea = new JList<String>(orderCartModel);
         orderCartArea.setBounds(340, 35, 250, 250);
         orderCartArea.setBorder(BorderFactory.createLineBorder(Color.black));
-        orderCartModel.addElement("Sandwich");
-        orderCartModel.addElement("Coffee");
         frame.add(orderCartArea);
 
         orderRemoveButton = new JButton();
@@ -196,6 +194,7 @@ public class GenericRestaurantForm implements ActionListener {
         orderStatusArea.setBorder(BorderFactory.createLineBorder(Color.black));
         orderStatusModel.addElement("19:02:03 Order submitted");
         orderStatusModel.addElement("19:02:05 Order accepted");
+        addListener();
         frame.add(orderStatusArea);
 
     }
@@ -222,7 +221,10 @@ public class GenericRestaurantForm implements ActionListener {
     public void addOrderCartModel(String str) {
         orderCartModel.addElement(str);
     }
-
+    public int getListIndex()
+    {
+        return orderCartArea.getSelectedIndex();
+    }
 
     public void removeOrderCartModel(int index) {
         orderCartModel.removeElementAt(index);
@@ -232,7 +234,11 @@ public class GenericRestaurantForm implements ActionListener {
         orderCartModel.clear();
     }
 
-
+    public void addListener() {
+        orderCartArea.addListSelectionListener(new ListSelectionListener(){
+            public void valueChanged(ListSelectionEvent evt) {
+            }});
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -267,7 +273,9 @@ public class GenericRestaurantForm implements ActionListener {
         }
 
         if (e.getSource() == orderRemoveButton) {
-            emptyOrderCartModel();
+            orderItem = orderClient.getOrder().getOrderList().get(getListIndex());
+            orderClient.removeItemToOrder(orderItem);
+            removeOrderCartModel(getListIndex());
 
         }
         if (e.getSource() == orderSubmitButton) {

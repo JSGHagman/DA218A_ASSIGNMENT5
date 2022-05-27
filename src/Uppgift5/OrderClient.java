@@ -68,4 +68,7 @@ public class OrderClient extends AbstractOrderClient{
         order.removeOrderItem(item);
     }
 
+    public Order getOrder() {
+        return order;
+    }
 }
