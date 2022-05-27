@@ -14,6 +14,7 @@ public class KitchenServer extends AbstractKitchenServer {
     public KitchenServer() {
         threadPool = Executors.newFixedThreadPool(10);
         orderMap = new HashMap<>();
+
     }
 
     @Override
@@ -56,5 +57,9 @@ public class KitchenServer extends AbstractKitchenServer {
             ex.printStackTrace();
         }
       order.setStatus(OrderStatus.Ready);
+    }
+
+    public void updateGUI(Order order){
+        System.out.println(order.getStatus().toString());
     }
 }

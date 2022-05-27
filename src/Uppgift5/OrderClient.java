@@ -37,6 +37,7 @@ public class OrderClient extends AbstractOrderClient{
             @Override
             public void run() {
                 System.out.println("Polling");
+                //System.out.println(order.getStatus());
                     if (order.getStatus().equals(OrderStatus.Ready)) {
                         pickUpOrder();
                         this.cancel();
