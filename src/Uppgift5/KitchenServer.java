@@ -11,7 +11,6 @@ public class KitchenServer extends AbstractKitchenServer {
     private static final int inMillis = 1000;
     private static final Random rand = new Random();
 
-
     public KitchenServer() {
         threadPool = Executors.newFixedThreadPool(10);
         orderMap = new HashMap<>();
