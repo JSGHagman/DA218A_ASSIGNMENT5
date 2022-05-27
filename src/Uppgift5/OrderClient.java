@@ -15,6 +15,7 @@ public class OrderClient extends AbstractOrderClient{
 
     public OrderClient(KitchenServer server) {
         order = new Order();
+        this.kitchenServer = server;
     }
 
     @Override
