@@ -2,6 +2,10 @@ package Uppgift5;
 
 public class OrderClient extends AbstractOrderClient{
 
+
+    public OrderClient() {
+    }
+
     @Override
     public void submitOrder() {
 

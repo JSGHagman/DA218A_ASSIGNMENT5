@@ -194,13 +194,53 @@ public class GenericRestaurantForm implements ActionListener {
 
     }
 
+    public DefaultListModel<String> getOrderStatusModel() {
+        return orderStatusModel;
+    }
+
+    public void addOrderStatusModel(String str) {
+        this.orderStatusModel.addElement(str);
+    }
+
+    public void removeOrderStatusModel(){}
+
+    public DefaultListModel<String> getOrderCartModel() {
+
+        return orderCartModel;
+    }
+
+    public void setOrderCartModel(DefaultListModel<String> orderCartModel) {
+        this.orderCartModel = orderCartModel;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
+
+        if (e.getSource() == menuItem1Button) {
+
+            float price = Float.parseFloat(menuItem1Cost.getText().substring(0,menuItem1Cost.getText().length()-2));
+
+            order = new OrderItem(menuItem1Name.getText(), menuItem1Descr.getText(), price);
+            client.addItemToOrder(order);
+
+        }
+
+        if (e.getSource() == menuItem2Button) {
+
+            float price = Float.parseFloat(menuItem2Cost.getText().substring(0,menuItem2Cost.getText().length()-2));
+
+            order = new OrderItem(menuItem2Name.getText(), menuItem2Descr.getText(), price);
+            client.addItemToOrder(order);
+
+        }
         if (e.getSource() == menuItem3Button) {
-            float price = Float.parseFloat(menuItem3Cost.getText());
+
+            float price = Float.parseFloat(menuItem3Cost.getText().substring(0,menuItem3Cost.getText().length()-2));
+
             order = new OrderItem(menuItem3Name.getText(), menuItem3Descr.getText(), price);
             client.addItemToOrder(order);
 
         }
+
     }
 }
