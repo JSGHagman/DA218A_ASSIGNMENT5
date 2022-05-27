@@ -4,6 +4,7 @@ public class OrderClient extends AbstractOrderClient{
 
 
     public OrderClient() {
+
     }
 
     @Override
