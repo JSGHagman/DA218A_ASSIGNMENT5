@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class OrderClient extends AbstractOrderClient implements Runnable {
+public class OrderClient extends AbstractOrderClient{
 
     private Order order;
     private AbstractKitchenServer kitchenServer;
@@ -14,12 +14,17 @@ public class OrderClient extends AbstractOrderClient implements Runnable {
     public OrderClient() {
         order = new Order();
         kitchenServer = new KitchenServer();
-        pollingTimer = new Timer();
+
     }
 
     @Override
     public void submitOrder() {
         order.setSent(true);
+        try {
+            kitchenServer.receiveOrder(order);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         startPollingServer(this.order.getOrderID());
         System.out.println("Submitted");
 
@@ -27,20 +32,15 @@ public class OrderClient extends AbstractOrderClient implements Runnable {
 
     @Override
     protected void startPollingServer(String orderId) {
-
+        pollingTimer = new Timer();
         TimerTask polling = new TimerTask() {
             @Override
             public void run() {
-                try {
-                    System.out.println("Polling");
-                    Boolean status = kitchenServer.checkStatus(orderId).isDone();
-                    if (status) {
+                System.out.println("Polling");
+                    if (order.getStatus().equals(OrderStatus.Ready)) {
                         pickUpOrder();
-                        pollingTimer.cancel();
+                        this.cancel();
                     }
-                } catch (InterruptedException e) {
-
-                }
             }
         };
         pollingTimer.scheduleAtFixedRate(polling, new Date(), 1000);
@@ -50,13 +50,15 @@ public class OrderClient extends AbstractOrderClient implements Runnable {
     @Override
     protected void pickUpOrder() {
         System.out.println("Pickup Order");
+        try {
+            kitchenServer.serveOrder(this.order.getOrderID());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         order.setDone(true);
     }
 
-    @Override
-    public void run() {
-        submitOrder();
-    }
+
 
     public void addItemToOrder(OrderItem item) {
         order.addOrderItem(item);
