@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 
 
-public class GenericRestaurantForm implements ActionListener {
+public class GenericRestaurantForm implements ActionListener, Callback {
 
     private JFrame frame;            // The Main window
 
@@ -44,7 +44,8 @@ public class GenericRestaurantForm implements ActionListener {
     JList<String> orderStatusArea;               // To display status of the submitted order
 
     private OrderItem orderItem;
-    private OrderClient orderClient = new OrderClient();
+    private KitchenServer kitchenServer = new KitchenServer();
+    private OrderClient orderClient = new OrderClient(kitchenServer);
 
     public GenericRestaurantForm() {
     }
@@ -284,5 +285,10 @@ public class GenericRestaurantForm implements ActionListener {
 
         }
 
+    }
+
+    @Override
+    public void onUpdateEvent(String update) {
+        addOrderStatusModel(update);
     }
 }
