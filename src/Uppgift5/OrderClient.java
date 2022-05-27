@@ -4,6 +4,8 @@ package Uppgift5;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class OrderClient extends AbstractOrderClient{
 
@@ -26,7 +28,8 @@ public class OrderClient extends AbstractOrderClient{
             e.printStackTrace();
         }
         startPollingServer(this.order.getOrderID());
-        System.out.println("Submitted");
+        System.out.println("Submitted " + this.order.getOrderID());
+        order = new Order();
 
     }
 
@@ -36,11 +39,16 @@ public class OrderClient extends AbstractOrderClient{
         TimerTask polling = new TimerTask() {
             @Override
             public void run() {
-                System.out.println("Polling");
-                    if (order.getStatus().equals(OrderStatus.Ready)) {
-                        pickUpOrder();
-                        this.cancel();
-                    }
+                try {
+                    OrderStatus result = kitchenServer.checkStatus(orderId).get();
+                    if (result.equals(OrderStatus.Ready))
+                      {
+                            pickUpOrder();
+                            this.cancel();
+                        }
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
         };
         pollingTimer.scheduleAtFixedRate(polling, new Date(), 1000);
@@ -49,7 +57,7 @@ public class OrderClient extends AbstractOrderClient{
 
     @Override
     protected void pickUpOrder() {
-        System.out.println("Pickup Order");
+        System.out.println("Pickup Order " +  this.order.getOrderID());
         try {
             kitchenServer.serveOrder(this.order.getOrderID());
         } catch (InterruptedException e) {
