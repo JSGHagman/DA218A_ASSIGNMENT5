@@ -8,12 +8,11 @@ import java.util.concurrent.Executors;
 public class KitchenServer extends AbstractKitchenServer{
 
 
-
-
     public KitchenServer() {
         threadPool =  Executors.newFixedThreadPool(10);
         orderMap = new HashMap<>();
     }
+
     @Override
     public CompletableFuture<KitchenStatus> receiveOrder(Order order) throws InterruptedException {
         return null;

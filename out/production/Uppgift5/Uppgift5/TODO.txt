@@ -1,8 +1,5 @@
 TODO:
 
-- Två trådar för varje order, en
-
-
 1. Orderclient skickar order till kitchenserver, kitchenserver skickar tillbaka status.
 2. KitchenServer kallar på cook(order).
 3. Orderclient startar periodisk check för status på order genom startPollingServer().
