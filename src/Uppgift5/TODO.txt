@@ -1,0 +1,30 @@
+TODO:
+
+1. Orderclient skickar order till kitchenserver, kitchenserver skickar tillbaka status.
+2. KitchenServer kallar på cook(order).
+3. Orderclient startar periodisk check för status på order genom startPollingServer().
+4. Den periodiska checken skall kalla på check status i kitchenserver, som returnerar status.
+5. Om status == Redo -> hämta order genom ServeOrder, som returnerar en order, (och plockar bort från hashmap kanske?)
+
+
+
+
+
+HELP AND GUIDANCE
+Java:
+
+5.1 In the KitchenServer, you may use a CompletableFuture object as a “promise”
+to return value asynchronously. We discourage you to use the complete( ) method
+as it may lead to blocking of GUI. Use SupplyAsync( ) method to start an
+asynchronous task and thenAccept( ) to assign a call-back (e.g. update of GUI)
+on completion of the asynchronous task.
+(Useful ref: https://javagoal.com/completablefuture-in-java/ ).
+
+5.2 You may use Executors.newFixedThreadpool(int) or preferably ExecutorService
+to create a thread pool and myPool.submit(task) to submit a task for execution.
+For more info on ExercutorService, you can visit: https://www.baeldung.com/java-
+executor-service-tutorial.
+
+5.3 For setting up a periodic task, you may use Timer.scheduleAtFixedRate( )
+together with a TimerTask.
+
