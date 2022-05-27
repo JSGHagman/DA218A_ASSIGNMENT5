@@ -1,9 +1,13 @@
 package Uppgift5;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
+
 
 public class GenericRestaurantForm implements ActionListener {
 
@@ -39,8 +43,8 @@ public class GenericRestaurantForm implements ActionListener {
     DefaultListModel<String> orderStatusModel;   // Stores a list of string that is displayed at orderStatusArea
     JList<String> orderStatusArea;               // To display status of the submitted order
 
-    private OrderItem order;
-    private OrderClient client = new OrderClient();
+    private OrderItem orderItem;
+    private OrderClient orderClient = new OrderClient();
 
     public GenericRestaurantForm() {
     }
@@ -219,9 +223,16 @@ public class GenericRestaurantForm implements ActionListener {
         orderCartModel.addElement(str);
     }
 
+
     public void removeOrderCartModel(int index) {
         orderCartModel.removeElementAt(index);
     }
+
+    public void emptyOrderCartModel() {
+        orderCartModel.clear();
+    }
+
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -230,8 +241,9 @@ public class GenericRestaurantForm implements ActionListener {
 
             float price = Float.parseFloat(menuItem1Cost.getText().substring(0,menuItem1Cost.getText().length()-2));
 
-            order = new OrderItem(menuItem1Name.getText(), menuItem1Descr.getText(), price);
-            client.addItemToOrder(order);
+            orderItem = new OrderItem(menuItem1Name.getText(), menuItem1Descr.getText(), price);
+            orderClient.addItemToOrder(orderItem);
+            addOrderCartModel(menuItem1Name.getText());
 
         }
 
@@ -239,23 +251,28 @@ public class GenericRestaurantForm implements ActionListener {
 
             float price = Float.parseFloat(menuItem2Cost.getText().substring(0,menuItem2Cost.getText().length()-2));
 
-            order = new OrderItem(menuItem2Name.getText(), menuItem2Descr.getText(), price);
-            client.addItemToOrder(order);
+            orderItem = new OrderItem(menuItem2Name.getText(), menuItem2Descr.getText(), price);
+            orderClient.addItemToOrder(orderItem);
+            addOrderCartModel(menuItem2Name.getText());
 
         }
         if (e.getSource() == menuItem3Button) {
 
             float price = Float.parseFloat(menuItem3Cost.getText().substring(0,menuItem3Cost.getText().length()-2));
 
-            order = new OrderItem(menuItem3Name.getText(), menuItem3Descr.getText(), price);
-            client.addItemToOrder(order);
+            orderItem = new OrderItem(menuItem3Name.getText(), menuItem3Descr.getText(), price);
+            orderClient.addItemToOrder(orderItem);
+            addOrderCartModel(menuItem3Name.getText());
 
         }
 
         if (e.getSource() == orderRemoveButton) {
+            emptyOrderCartModel();
 
         }
         if (e.getSource() == orderSubmitButton) {
+            emptyOrderCartModel();
+            orderClient.submitOrder();
 
         }
 
