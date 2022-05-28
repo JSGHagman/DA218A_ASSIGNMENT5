@@ -1,11 +1,12 @@
 package Uppgift5;
 
 public enum OrderStatus {
-    NotSent("not sent to the server"),
-    Received("received"),
-    BeingPrepared("preparing"),
-    Ready("ready"),
-    Served("served"),
+    NotSent("Not sent to the server"),
+    Received("Received"),
+    BeingPrepared("Preparing"),
+    Ready("Ready"),
+    Served("Served"),
+    Submitted("Submitted"),
     NotFound("not found");
 
     public final String text;

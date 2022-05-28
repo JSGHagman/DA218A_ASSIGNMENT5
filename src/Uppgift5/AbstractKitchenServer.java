@@ -1,6 +1,7 @@
 package Uppgift5;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.CompletableFuture;
 
@@ -16,8 +17,8 @@ public abstract class AbstractKitchenServer {
 
     /**
      * This method should save the order to the map
-     * and return a confirmation that the order is received {@link KitchenStatus#Received}
-     * or a rejection {@link KitchenStatus#Rejected}
+     * and return a confirmation that the order is received {@link}
+     * or a rejection {@link}
      *
      * When an order is received, a {@link #cook(Order)} task should be launced in th {@link #threadPool}
      *
@@ -39,7 +40,7 @@ public abstract class AbstractKitchenServer {
      * Note that the methods should sleep for a random duration before it returns a status.
      * This is to simulate an actual server-call that might operate slowly.
      */
-    abstract public CompletableFuture<OrderStatus> serveOrder(String orderID) throws InterruptedException;
+    abstract public CompletableFuture<OrderStatus> serveOrder(Order order) throws InterruptedException;
 
     /**
      * Simulate cooking in this method.

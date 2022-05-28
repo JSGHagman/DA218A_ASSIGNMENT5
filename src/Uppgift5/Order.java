@@ -2,6 +2,7 @@ package Uppgift5;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 public class Order {
@@ -12,7 +13,10 @@ public class Order {
     private OrderStatus status = OrderStatus.NotSent;
 
     public Order() {
-        this.orderID = UUID.randomUUID().toString();
+        Random rnd = new Random();
+        int number = rnd.nextInt(999999);
+        this.orderID = String.format("%06d", number);
+        //this.orderID = UUID.randomUUID().toString();
         orderList = new ArrayList<>();
     }
 
@@ -32,13 +36,13 @@ public class Order {
         this.done = done;
     }
 
-
     public boolean isSent() {
         return sent;
     }
 
     public void setSent(boolean sent) {
         this.sent = sent;
+        this.setStatus(OrderStatus.Submitted);
     }
 
     public String getOrderID() {
