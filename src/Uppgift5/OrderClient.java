@@ -28,9 +28,6 @@ public class OrderClient extends AbstractOrderClient {
                 () -> {
                     return kitchenServer.receiveOrder(order);
                 }).thenAccept(OrderStatus -> callback.onUpdateEvent(order.getOrderID(), Uppgift5.OrderStatus.Submitted));
-
-
-
         startPollingServer(order);
     }
 

@@ -34,6 +34,11 @@ public class KitchenServer extends AbstractKitchenServer {
 
     @Override
     public CompletableFuture<OrderStatus> checkStatus(String orderID) {
+        try{
+            Thread.sleep(1000);
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
         return completableFuture.supplyAsync(() -> {
             Order order = orderMap.get(orderID);
             return order.getStatus();
@@ -51,7 +56,6 @@ public class KitchenServer extends AbstractKitchenServer {
         int seconds = rand.nextInt(5,10);
         long sleep = seconds * inMillis;
         order.setStatus(OrderStatus.BeingPrepared);
-
         try{
             Thread.sleep(1000);
             completableFuture.supplyAsync(
