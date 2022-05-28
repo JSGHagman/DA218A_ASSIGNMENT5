@@ -7,6 +7,7 @@ public enum OrderStatus {
     Ready("Ready"),
     Served("Served"),
     Submitted("Submitted"),
+    Paid("Paid"),
     NotFound("not found");
 
     public final String text;

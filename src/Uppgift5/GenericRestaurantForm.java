@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -17,6 +18,7 @@ public class GenericRestaurantForm implements ActionListener, Callback {
 
     JLabel labelMenu;               // Label for menu section
     JLabel labelOrder;              // Label for Order section
+    JLabel labelPrice;              // Label for price info
     JLabel labelStatus;             // Label for Status section
 
     JPanel menuItem1;               // panel for the first menu item
@@ -49,7 +51,8 @@ public class GenericRestaurantForm implements ActionListener, Callback {
     private OrderItem orderItem;
     private KitchenServer kitchenServer = new KitchenServer();
     private OrderClient orderClient = new OrderClient(kitchenServer);
-
+    private String ordernbr;
+    private float orderPrice = 0;
     public GenericRestaurantForm() {
         registerCallback();
         orderItems = new ArrayList<>();
@@ -68,7 +71,7 @@ public class GenericRestaurantForm implements ActionListener, Callback {
         frame.setBounds(0, 0, 900, 482);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(null);
-        frame.setTitle("Generic Restaurant");
+        frame.setTitle("Brottangrottans Restaurang");
         InitializeGUI();                    // Fill in components
         frame.setVisible(true);
         frame.setResizable(true);            // Prevent user from change size
@@ -79,7 +82,6 @@ public class GenericRestaurantForm implements ActionListener, Callback {
         labelMenu = new JLabel("Menu");
         labelMenu.setBounds(10, 10, 128, 13);
         frame.add(labelMenu);
-
         //**********************
         //*** Menu item 1 *****
         //*********************
@@ -170,9 +172,14 @@ public class GenericRestaurantForm implements ActionListener, Callback {
         //*********************
         //*** Order cart  *****
         //*********************
-        labelOrder = new JLabel("Order");
-        labelOrder.setBounds(340, 10, 128, 13);
+        labelOrder = new JLabel("Order#:");
+        labelOrder.setBounds(340, 10, 125, 13);
+        setOrderLabel();
         frame.add(labelOrder);
+
+        labelPrice = new JLabel("Price: ");
+        labelPrice.setBounds(labelOrder.getX() + labelOrder.getWidth(), 10, 125, 13);
+        frame.add(labelPrice);
 
         orderCartModel = new DefaultListModel<String>();
         orderCartArea = new JList<String>(orderCartModel);
@@ -205,6 +212,26 @@ public class GenericRestaurantForm implements ActionListener, Callback {
         orderStatusArea.setBorder(BorderFactory.createLineBorder(Color.black));
         addListener();
         frame.add(orderStatusArea);
+    }
+
+    public void setOrderLabel(){
+        Random rnd = new Random();
+        int number = rnd.nextInt(999999);
+        ordernbr = String.format("%06d", number);
+        String label = String.format("Order: #%s", ordernbr);
+        labelOrder.setText(label);
+    }
+
+    public void setPriceLabel(float price){
+        orderPrice += price;
+        String label = String.format("Price: %s kr", orderPrice);
+        labelPrice.setText(label);
+    }
+
+    public void subtractFromPrice(float price){
+        orderPrice -= price;
+        String label = String.format("Price: %s kr", orderPrice);
+        labelPrice.setText(label);
     }
 
     public DefaultListModel<String> getOrderStatusModel() {
@@ -253,39 +280,54 @@ public class GenericRestaurantForm implements ActionListener, Callback {
             }});
     }
 
+    public String getOrderID(){
+        return ordernbr;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == menuItem1Button) {
             float price = Float.parseFloat(menuItem1Cost.getText().substring(0,menuItem1Cost.getText().length()-2));
             addOrderItems(menuItem1Name.getText(), menuItem1Descr.getText(), price);
-            addOrderCartModel(menuItem1Name.getText());
-
+            addOrderCartModel(menuItem1Name.getText() + " - " + menuItem1Cost.getText());
+            setPriceLabel(price);
         }
 
         if (e.getSource() == menuItem2Button) {
             float price = Float.parseFloat(menuItem2Cost.getText().substring(0,menuItem2Cost.getText().length()-2));
             addOrderItems(menuItem2Name.getText(), menuItem2Descr.getText(), price);
-            addOrderCartModel(menuItem2Name.getText());
-
+            addOrderCartModel(menuItem2Name.getText() + " - " + menuItem2Cost.getText());
+            setPriceLabel(price);
         }
+
         if (e.getSource() == menuItem3Button) {
             float price = Float.parseFloat(menuItem3Cost.getText().substring(0,menuItem3Cost.getText().length()-2));
             addOrderItems(menuItem3Name.getText(), menuItem3Descr.getText(), price);
-            addOrderCartModel(menuItem3Name.getText());
+            addOrderCartModel(menuItem3Name.getText() + " - " + menuItem3Cost.getText());
+            setPriceLabel(price);
         }
 
         if (e.getSource() == orderRemoveButton) {
             orderItem = orderClient.getOrder().getOrderList().get(getListIndex());
+            float price = orderItem.getCost();
+            subtractFromPrice(price);
             orderClient.removeItemToOrder(orderItem);
             removeOrderCartModel(getListIndex());
-
         }
         if (e.getSource() == orderSubmitButton) {
-            orderClient.onOrderClick();
-            orderClient.addItemToOrder(orderItems);
-            emptyOrderCartModel();
-            orderClient.submitOrder(orderClient.getOrder());
+            if(!orderItems.isEmpty()) {
+                orderClient.onOrderClick(ordernbr);
+                orderClient.addItemToOrder(orderItems);
+                emptyOrderCartModel();
+                orderClient.submitOrder(orderClient.getOrder());
+                orderPrice = 0;
+                setOrderLabel();
+                setPriceLabel(orderPrice);
+                orderItems.clear();
+            }else{
+                JOptionPane.showMessageDialog(null,"Please add item before ordering");
+            }
         }
     }
 

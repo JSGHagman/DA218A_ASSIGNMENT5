@@ -13,7 +13,7 @@ public class OrderClient extends AbstractOrderClient {
     private Callback callback;
 
     public OrderClient(KitchenServer server) {
-        order = new Order();
+        //order = new Order();
         kitchenServer = server;
     }
 
@@ -88,8 +88,8 @@ public class OrderClient extends AbstractOrderClient {
         return order;
     }
 
-    public void onOrderClick() {
-        order = new Order();
+    public void onOrderClick(String orderNbr) {
+        order = new Order(orderNbr);
     }
 
 }
