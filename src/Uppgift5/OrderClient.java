@@ -1,73 +1,86 @@
 package Uppgift5;
-
-
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class OrderClient extends AbstractOrderClient{
-
+public class OrderClient extends AbstractOrderClient {
     private Order order;
-    private AbstractKitchenServer kitchenServer;
-
+    private KitchenServer kitchenServer;
+    private CompletableFuture<Void> update = new CompletableFuture<>();
+    private Callback callback;
 
     public OrderClient(KitchenServer server) {
         order = new Order();
+        kitchenServer = server;
+    }
+
+    public void registerCallback(Callback callback) {
+        this.callback = callback;
     }
 
     @Override
-    public void submitOrder() {
+    public void submitOrder(Order order) {
         order.setSent(true);
-        try {
-            kitchenServer.receiveOrder(order);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        startPollingServer(this.order.getOrderID());
-        System.out.println("Submitted " + this.order.getOrderID());
-        order = new Order();
+        update.supplyAsync(
+                () -> {
+                    return kitchenServer.receiveOrder(order);
+                }).thenAccept(OrderStatus -> callback.onUpdateEvent(order.getOrderID(), Uppgift5.OrderStatus.Submitted));
 
+
+
+        startPollingServer(order);
     }
 
     @Override
-    protected void startPollingServer(String orderId) {
+    public void startPollingServer(Order order) {
         pollingTimer = new Timer();
+        update.supplyAsync(
+                () -> {
+                    return kitchenServer.checkStatus(order.getOrderID());
+                }).thenAccept(OrderStatus -> callback.onUpdateEvent(order.getOrderID(), Uppgift5.OrderStatus.Received));
         TimerTask polling = new TimerTask() {
             @Override
             public void run() {
                 try {
-                    OrderStatus result = kitchenServer.checkStatus(orderId).get();
-                    if (result.equals(OrderStatus.Ready))
-                      {
-                            pickUpOrder();
-                            this.cancel();
-                        }
+                    OrderStatus result = kitchenServer.checkStatus(order.getOrderID()).get();
+                    String status = String.format("Status for ID: %s | %s", order.getOrderID(), result.text);
+                    if (result.equals(OrderStatus.Ready)) {
+                        update.supplyAsync(
+                                () -> {
+                                    return kitchenServer.checkStatus(order.getOrderID());
+                                }).thenAccept(OrderStatus -> callback.onUpdateEvent(order.getOrderID(), order.getStatus()));
+                        pickUpOrder(order);
+                        this.cancel();
+                    }
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
             }
         };
         pollingTimer.scheduleAtFixedRate(polling, new Date(), 1000);
-
     }
 
     @Override
-    protected void pickUpOrder() {
-        System.out.println("Pickup Order " +  this.order.getOrderID());
+    public void pickUpOrder(Order order) {
         try {
-            kitchenServer.serveOrder(this.order.getOrderID());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.sleep(1500);
+            update.supplyAsync(
+                    () -> {
+                        return kitchenServer.serveOrder(order);
+                    }).thenAccept(OrderStatus -> callback.onUpdateEvent(order.getOrderID(), order.getStatus()));
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
         }
         order.setDone(true);
     }
 
-
-
-    public void addItemToOrder(OrderItem item) {
-        order.addOrderItem(item);
+    public void addItemToOrder(ArrayList<OrderItem> items) {
+        for (OrderItem orderItem : items) {
+            order.addOrderItem(orderItem);
+        }
     }
 
     public void removeItemToOrder(OrderItem item) {
@@ -77,4 +90,9 @@ public class OrderClient extends AbstractOrderClient{
     public Order getOrder() {
         return order;
     }
+
+    public void onOrderClick() {
+        order = new Order();
+    }
+
 }

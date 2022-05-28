@@ -6,7 +6,9 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 
 public class GenericRestaurantForm implements ActionListener, Callback {
@@ -43,11 +45,19 @@ public class GenericRestaurantForm implements ActionListener, Callback {
     DefaultListModel<String> orderStatusModel;   // Stores a list of string that is displayed at orderStatusArea
     JList<String> orderStatusArea;               // To display status of the submitted order
 
+    private ArrayList<OrderItem> orderItems;
     private OrderItem orderItem;
     private KitchenServer kitchenServer = new KitchenServer();
     private OrderClient orderClient = new OrderClient(kitchenServer);
 
     public GenericRestaurantForm() {
+        registerCallback();
+        orderItems = new ArrayList<>();
+    }
+
+    public void addOrderItems(String name, String description, float price){
+        OrderItem item = new OrderItem(name, description, price);
+        orderItems.add(item);
     }
 
     /**
@@ -193,15 +203,17 @@ public class GenericRestaurantForm implements ActionListener, Callback {
         orderStatusArea = new JList<String>(orderStatusModel);
         orderStatusArea.setBounds(620, 35, 250, 335);
         orderStatusArea.setBorder(BorderFactory.createLineBorder(Color.black));
-        orderStatusModel.addElement("19:02:03 Order submitted");
-        orderStatusModel.addElement("19:02:05 Order accepted");
         addListener();
         frame.add(orderStatusArea);
-
     }
 
     public DefaultListModel<String> getOrderStatusModel() {
         return orderStatusModel;
+    }
+
+    public void registerCallback(){
+        orderClient.registerCallback(this);
+        kitchenServer.registerCallback(this);
     }
 
     public void addOrderStatusModel(String str) {
@@ -245,32 +257,22 @@ public class GenericRestaurantForm implements ActionListener, Callback {
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == menuItem1Button) {
-
             float price = Float.parseFloat(menuItem1Cost.getText().substring(0,menuItem1Cost.getText().length()-2));
-
-            orderItem = new OrderItem(menuItem1Name.getText(), menuItem1Descr.getText(), price);
-            orderClient.addItemToOrder(orderItem);
+            addOrderItems(menuItem1Name.getText(), menuItem1Descr.getText(), price);
             addOrderCartModel(menuItem1Name.getText());
 
         }
 
         if (e.getSource() == menuItem2Button) {
-
             float price = Float.parseFloat(menuItem2Cost.getText().substring(0,menuItem2Cost.getText().length()-2));
-
-            orderItem = new OrderItem(menuItem2Name.getText(), menuItem2Descr.getText(), price);
-            orderClient.addItemToOrder(orderItem);
+            addOrderItems(menuItem2Name.getText(), menuItem2Descr.getText(), price);
             addOrderCartModel(menuItem2Name.getText());
 
         }
         if (e.getSource() == menuItem3Button) {
-
             float price = Float.parseFloat(menuItem3Cost.getText().substring(0,menuItem3Cost.getText().length()-2));
-
-            orderItem = new OrderItem(menuItem3Name.getText(), menuItem3Descr.getText(), price);
-            orderClient.addItemToOrder(orderItem);
+            addOrderItems(menuItem3Name.getText(), menuItem3Descr.getText(), price);
             addOrderCartModel(menuItem3Name.getText());
-
         }
 
         if (e.getSource() == orderRemoveButton) {
@@ -280,15 +282,17 @@ public class GenericRestaurantForm implements ActionListener, Callback {
 
         }
         if (e.getSource() == orderSubmitButton) {
+            orderClient.onOrderClick();
+            orderClient.addItemToOrder(orderItems);
             emptyOrderCartModel();
-            orderClient.submitOrder();
-
+            orderClient.submitOrder(orderClient.getOrder());
         }
-
     }
 
     @Override
-    public void onUpdateEvent(String update) {
-        addOrderStatusModel(update);
+    public Consumer<? super CompletableFuture<OrderStatus>> onUpdateEvent(String orderID, OrderStatus update) {
+        String updateText = String.format("#%s %s", orderID, update.text);
+        addOrderStatusModel(updateText);
+        return null;
     }
 }

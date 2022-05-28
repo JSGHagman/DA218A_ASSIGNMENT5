@@ -1,52 +1,49 @@
 package Uppgift5;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 public class KitchenServer extends AbstractKitchenServer {
     private static final int inMillis = 1000;
     private static final Random rand = new Random();
-    private CompletableFuture<OrderStatus> completableFuture;
+    private CompletableFuture<OrderStatus> completableFuture = new CompletableFuture<>();
+    private Callback callback;
 
     public KitchenServer() {
         threadPool = Executors.newFixedThreadPool(10);
         orderMap = new HashMap<>();
-        completableFuture = new CompletableFuture();
     }
 
-    
+    public void registerCallback(Callback callback){
+        this.callback = callback;
+    }
 
     @Override
-    public CompletableFuture<OrderStatus> receiveOrder(Order order) throws InterruptedException {
+    public CompletableFuture<OrderStatus> receiveOrder(Order order){
         order.setStatus(OrderStatus.Received);
         orderMap.put(order.getOrderID(), order);
         Runnable cook = () -> {
             cook(order);
         };
         threadPool.submit(cook);
-        return completableFuture.supplyAsync(() -> OrderStatus.Received);
+        return completableFuture.supplyAsync(() -> order.getStatus());
     }
 
     @Override
-    public CompletableFuture<OrderStatus> checkStatus(String orderID) throws InterruptedException {
+    public CompletableFuture<OrderStatus> checkStatus(String orderID) {
         return completableFuture.supplyAsync(() -> {
             Order order = orderMap.get(orderID);
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
             return order.getStatus();
         });
     }
 
     @Override
-    public CompletableFuture<OrderStatus> serveOrder(String orderID) throws InterruptedException {
-        return completableFuture.supplyAsync(() -> OrderStatus.Served);
+    public CompletableFuture<OrderStatus> serveOrder(Order order) {
+        order.setStatus(OrderStatus.Served);
+        return completableFuture.supplyAsync(() -> order.getStatus());
     }
 
     @Override
@@ -54,6 +51,17 @@ public class KitchenServer extends AbstractKitchenServer {
         int seconds = rand.nextInt(5,10);
         long sleep = seconds * inMillis;
         order.setStatus(OrderStatus.BeingPrepared);
+
+        try{
+            Thread.sleep(1000);
+            completableFuture.supplyAsync(
+                    () -> {
+                        return checkStatus(order.getOrderID());
+                    }).thenAccept(OrderStatus -> callback.onUpdateEvent(order.getOrderID(), order.getStatus()));
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+
         try{
             Thread.sleep(sleep);
         }catch (InterruptedException ex){
@@ -62,7 +70,4 @@ public class KitchenServer extends AbstractKitchenServer {
       order.setStatus(OrderStatus.Ready);
     }
 
-    public void updateGUI(Order order){
-        System.out.println(order.getStatus().toString());
-    }
 }
