@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class KitchenServer extends AbstractKitchenServer {
     private static final int inMillis = 1000;
@@ -25,6 +26,10 @@ public class KitchenServer extends AbstractKitchenServer {
     public CompletableFuture<OrderStatus> receiveOrder(Order order){
         order.setStatus(OrderStatus.Received);
         orderMap.put(order.getOrderID(), order);
+        CompletableFuture.supplyAsync(
+                () -> {
+                    return checkStatus(order.getOrderID());
+                }).thenAccept(OrderStatus -> callback.onUpdateEvent(order.getOrderID(), Uppgift5.OrderStatus.Paid));
         Runnable cook = () -> {
             cook(order);
         };
@@ -74,4 +79,16 @@ public class KitchenServer extends AbstractKitchenServer {
       order.setStatus(OrderStatus.Ready);
     }
 
+    public void closeThreadPool() {
+        threadPool.shutdown();
+        try {
+            if (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+                threadPool.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            threadPool.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        System.out.println("All threads have been shutdown");
+    }
 }

@@ -6,13 +6,15 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 
-public class GenericRestaurantForm implements ActionListener, Callback {
+public class GenericRestaurantForm implements ActionListener, Callback, WindowListener {
 
     private JFrame frame;            // The Main window
 
@@ -76,6 +78,7 @@ public class GenericRestaurantForm implements ActionListener, Callback {
         frame.setVisible(true);
         frame.setResizable(true);            // Prevent user from change size
         frame.setLocationRelativeTo(null);    // Start middle screen
+        frame.addWindowListener(this);
     }
 
     private void InitializeGUI() {
@@ -336,5 +339,41 @@ public class GenericRestaurantForm implements ActionListener, Callback {
         String updateText = String.format("#%s %s", orderID, update.text);
         addOrderStatusModel(updateText);
         return null;
+    }
+
+    @Override
+    public void windowOpened(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+        kitchenServer.closeThreadPool();
+        System.exit(0);
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {
+
     }
 }
