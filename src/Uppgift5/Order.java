@@ -12,10 +12,8 @@ public class Order {
     private boolean done;
     private OrderStatus status = OrderStatus.NotSent;
 
-    public Order() {
-        Random rnd = new Random();
-        int number = rnd.nextInt(999999);
-        this.orderID = String.format("%06d", number);
+    public Order(String orderID) {
+        this.orderID = orderID;
         //this.orderID = UUID.randomUUID().toString();
         orderList = new ArrayList<>();
     }

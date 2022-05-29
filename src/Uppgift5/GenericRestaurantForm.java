@@ -6,17 +6,21 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 
-public class GenericRestaurantForm implements ActionListener, Callback {
+public class GenericRestaurantForm implements ActionListener, Callback, WindowListener {
 
     private JFrame frame;            // The Main window
 
     JLabel labelMenu;               // Label for menu section
     JLabel labelOrder;              // Label for Order section
+    JLabel labelPrice;              // Label for price info
     JLabel labelStatus;             // Label for Status section
 
     JPanel menuItem1;               // panel for the first menu item
@@ -49,7 +53,8 @@ public class GenericRestaurantForm implements ActionListener, Callback {
     private OrderItem orderItem;
     private KitchenServer kitchenServer = new KitchenServer();
     private OrderClient orderClient = new OrderClient(kitchenServer);
-
+    private String ordernbr;
+    private float orderPrice = 0;
     public GenericRestaurantForm() {
         registerCallback();
         orderItems = new ArrayList<>();
@@ -68,18 +73,18 @@ public class GenericRestaurantForm implements ActionListener, Callback {
         frame.setBounds(0, 0, 900, 482);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(null);
-        frame.setTitle("Generic Restaurant");
+        frame.setTitle("Brottangrottans Restaurang");
         InitializeGUI();                    // Fill in components
         frame.setVisible(true);
         frame.setResizable(true);            // Prevent user from change size
         frame.setLocationRelativeTo(null);    // Start middle screen
+        frame.addWindowListener(this);
     }
 
     private void InitializeGUI() {
         labelMenu = new JLabel("Menu");
         labelMenu.setBounds(10, 10, 128, 13);
         frame.add(labelMenu);
-
         //**********************
         //*** Menu item 1 *****
         //*********************
@@ -170,9 +175,14 @@ public class GenericRestaurantForm implements ActionListener, Callback {
         //*********************
         //*** Order cart  *****
         //*********************
-        labelOrder = new JLabel("Order");
-        labelOrder.setBounds(340, 10, 128, 13);
+        labelOrder = new JLabel("Order#:");
+        labelOrder.setBounds(340, 10, 125, 13);
+        setOrderLabel();
         frame.add(labelOrder);
+
+        labelPrice = new JLabel("Price: ");
+        labelPrice.setBounds(labelOrder.getX() + labelOrder.getWidth(), 10, 125, 13);
+        frame.add(labelPrice);
 
         orderCartModel = new DefaultListModel<String>();
         orderCartArea = new JList<String>(orderCartModel);
@@ -205,6 +215,26 @@ public class GenericRestaurantForm implements ActionListener, Callback {
         orderStatusArea.setBorder(BorderFactory.createLineBorder(Color.black));
         addListener();
         frame.add(orderStatusArea);
+    }
+
+    public void setOrderLabel(){
+        Random rnd = new Random();
+        int number = rnd.nextInt(999999);
+        ordernbr = String.format("%06d", number);
+        String label = String.format("Order: #%s", ordernbr);
+        labelOrder.setText(label);
+    }
+
+    public void setPriceLabel(float price){
+        orderPrice += price;
+        String label = String.format("Price: %s kr", orderPrice);
+        labelPrice.setText(label);
+    }
+
+    public void subtractFromPrice(float price){
+        orderPrice -= price;
+        String label = String.format("Price: %s kr", orderPrice);
+        labelPrice.setText(label);
     }
 
     public DefaultListModel<String> getOrderStatusModel() {
@@ -253,46 +283,126 @@ public class GenericRestaurantForm implements ActionListener, Callback {
             }});
     }
 
+    public String getOrderID(){
+        return ordernbr;
+    }
+
+    /**
+     * Actionlisteners for the buttons. 
+     * @param e
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == menuItem1Button) {
             float price = Float.parseFloat(menuItem1Cost.getText().substring(0,menuItem1Cost.getText().length()-2));
             addOrderItems(menuItem1Name.getText(), menuItem1Descr.getText(), price);
-            addOrderCartModel(menuItem1Name.getText());
-
+            addOrderCartModel(menuItem1Name.getText() + " - " + menuItem1Cost.getText());
+            setPriceLabel(price);
         }
 
         if (e.getSource() == menuItem2Button) {
             float price = Float.parseFloat(menuItem2Cost.getText().substring(0,menuItem2Cost.getText().length()-2));
             addOrderItems(menuItem2Name.getText(), menuItem2Descr.getText(), price);
-            addOrderCartModel(menuItem2Name.getText());
-
+            addOrderCartModel(menuItem2Name.getText() + " - " + menuItem2Cost.getText());
+            setPriceLabel(price);
         }
+
         if (e.getSource() == menuItem3Button) {
             float price = Float.parseFloat(menuItem3Cost.getText().substring(0,menuItem3Cost.getText().length()-2));
             addOrderItems(menuItem3Name.getText(), menuItem3Descr.getText(), price);
-            addOrderCartModel(menuItem3Name.getText());
+            addOrderCartModel(menuItem3Name.getText() + " - " + menuItem3Cost.getText());
+            setPriceLabel(price);
         }
 
         if (e.getSource() == orderRemoveButton) {
-            orderItem = orderClient.getOrder().getOrderList().get(getListIndex());
-            orderClient.removeItemToOrder(orderItem);
-            removeOrderCartModel(getListIndex());
+            orderItem = null;
+            try{
+                orderItem = orderItems.get(orderCartArea.getSelectedIndex());
+            }catch (IndexOutOfBoundsException ex){
+                JOptionPane.showMessageDialog(null,"Please select an item first");
+            }
 
+            if(orderItem != null){
+                float price = orderItem.getCost();
+                subtractFromPrice(price);
+                orderItems.remove(orderItem);
+                removeOrderCartModel(getListIndex());
+            }
         }
+
         if (e.getSource() == orderSubmitButton) {
-            orderClient.onOrderClick();
-            orderClient.addItemToOrder(orderItems);
-            emptyOrderCartModel();
-            orderClient.submitOrder(orderClient.getOrder());
+            if(!orderItems.isEmpty()) {
+                orderClient.onOrderClick(ordernbr);
+                orderClient.addItemToOrder(orderItems);
+                emptyOrderCartModel();
+                orderClient.submitOrder(orderClient.getOrder());
+                orderPrice = 0;
+                setOrderLabel();
+                setPriceLabel(orderPrice);
+                orderItems.clear();
+            }else{
+                JOptionPane.showMessageDialog(null,"Please add item before ordering");
+            }
         }
     }
 
+    /**
+     * Method is from the Callback interface
+     * It will update the status of the orders
+     * @param orderID
+     * @param update
+     * @return
+     */
     @Override
     public Consumer<? super CompletableFuture<OrderStatus>> onUpdateEvent(String orderID, OrderStatus update) {
         String updateText = String.format("#%s %s", orderID, update.text);
         addOrderStatusModel(updateText);
         return null;
+    }
+
+    /**
+     * This method is used when the window is closed, it will close all the threads in the kitchen server.
+     * @param e
+     */
+    @Override
+    public void windowClosing(WindowEvent e) {
+        kitchenServer.closeThreadPool();
+        System.exit(0);
+    }
+
+    /**
+     * The following methods are unused
+     * But had to be implemented because of the windowlistener.
+     * @param e
+     */
+    @Override
+    public void windowOpened(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {
+
     }
 }
