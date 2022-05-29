@@ -287,6 +287,10 @@ public class GenericRestaurantForm implements ActionListener, Callback, WindowLi
         return ordernbr;
     }
 
+    /**
+     * Actionlisteners for the buttons. 
+     * @param e
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
 
@@ -312,12 +316,21 @@ public class GenericRestaurantForm implements ActionListener, Callback, WindowLi
         }
 
         if (e.getSource() == orderRemoveButton) {
-            orderItem = orderClient.getOrder().getOrderList().get(getListIndex());
-            float price = orderItem.getCost();
-            subtractFromPrice(price);
-            orderClient.removeItemToOrder(orderItem);
-            removeOrderCartModel(getListIndex());
+            orderItem = null;
+            try{
+                orderItem = orderItems.get(orderCartArea.getSelectedIndex());
+            }catch (IndexOutOfBoundsException ex){
+                JOptionPane.showMessageDialog(null,"Please select an item first");
+            }
+
+            if(orderItem != null){
+                float price = orderItem.getCost();
+                subtractFromPrice(price);
+                orderItems.remove(orderItem);
+                removeOrderCartModel(getListIndex());
+            }
         }
+
         if (e.getSource() == orderSubmitButton) {
             if(!orderItems.isEmpty()) {
                 orderClient.onOrderClick(ordernbr);
@@ -334,6 +347,13 @@ public class GenericRestaurantForm implements ActionListener, Callback, WindowLi
         }
     }
 
+    /**
+     * Method is from the Callback interface
+     * It will update the status of the orders
+     * @param orderID
+     * @param update
+     * @return
+     */
     @Override
     public Consumer<? super CompletableFuture<OrderStatus>> onUpdateEvent(String orderID, OrderStatus update) {
         String updateText = String.format("#%s %s", orderID, update.text);
@@ -341,15 +361,24 @@ public class GenericRestaurantForm implements ActionListener, Callback, WindowLi
         return null;
     }
 
-    @Override
-    public void windowOpened(WindowEvent e) {
-
-    }
-
+    /**
+     * This method is used when the window is closed, it will close all the threads in the kitchen server.
+     * @param e
+     */
     @Override
     public void windowClosing(WindowEvent e) {
         kitchenServer.closeThreadPool();
         System.exit(0);
+    }
+
+    /**
+     * The following methods are unused
+     * But had to be implemented because of the windowlistener.
+     * @param e
+     */
+    @Override
+    public void windowOpened(WindowEvent e) {
+
     }
 
     @Override
